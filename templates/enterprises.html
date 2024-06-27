@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CAI Monitoring</title>
+    <link rel="stylesheet" href="static/style.css"/>
+    <!-- Boxicons CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="static/script.js" defer></script>
+</head>
+<body>
+<nav class="sidebar locked">
+    <div class="logo_items flex">
+        <span class="nav_image">
+          <img src="static/images/logo.png" alt="logo_img"/>
+        </span>
+        <span class="logo_name">Monitoring</span>
+        <i class="bx bx-lock-alt" id="lock-icon" title="Unlock Sidebar"></i>
+        <i class="bx bx-x" id="sidebar-close"></i>
+    </div>
+
+    <div class="menu_container">
+        <div class="menu_items">
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Dashboard</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/" class="link flex">
+                        <i class="bx bx-server"></i>
+                        <span>Tous les serveurs</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/enterprises" class="link flex">
+                        <i class="bx bx-buildings"></i>
+                        <span>Entreprises</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Gestion</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/add" class="link flex">
+                        <i class="bx bx-folder-plus"></i>
+                        <span>Ajouter un serveur</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Compte</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/edit_credentials" class="link flex">
+                        <i class="bx bx-cog"></i>
+                        <span>Modifier les identifiants</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/logout" class="link flex">
+                        <i class="bx bx-log-out"></i>
+                        <span>Se déconnecter</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Navbar -->
+<nav class="navbar flex">
+    <i class="bx bx-menu" id="sidebar-open"></i>
+</nav>
+<main class="main centered flex">
+    <!-- Servers list in the enterprise -->
+    <div class="enterprise-list">
+        {% for enterprise in enterprises %}
+        <div class="enterprise-item" onclick="goToEnterprise('{{ enterprise.name }}')">
+            <div><i class='bx bx-sm bx-buildings'></i><span>Entreprise : {{ enterprise.name }}</span></div>
+            <div><i class='bx bx-sm bx-server' ></i><span>Serveurs : {{ enterprise.count }}</span></div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+<script>
+    function goToEnterprise(name) {
+        window.location.href = `/enterprise/${name}`;
+    }
+</script>
+</body>
+</html>

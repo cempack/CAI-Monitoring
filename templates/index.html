@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CAI Monitoring</title>
+    <link rel="stylesheet" href="static/style.css"/>
+    <!-- Boxicons CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="static/script.js" defer></script>
+</head>
+<body>
+<nav class="sidebar locked">
+    <div class="logo_items flex">
+        <span class="nav_image">
+          <img src="static/images/logo.png" alt="logo_img"/>
+        </span>
+        <span class="logo_name">Monitoring</span>
+        <i class="bx bx-lock-alt" id="lock-icon" title="Unlock Sidebar"></i>
+        <i class="bx bx-x" id="sidebar-close"></i>
+    </div>
+
+    <div class="menu_container">
+        <div class="menu_items">
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Dashboard</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/edit_credentials" class="link flex">
+                        <i class="bx bx-server"></i>
+                        <span>Tous les serveurs</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/enterprises" class="link flex">
+                        <i class="bx bx-buildings"></i>
+                        <span>Entreprises</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Gestion</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/add" class="link flex">
+                        <i class="bx bx-folder-plus"></i>
+                        <span>Ajouter un serveur</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Compte</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/edit_credentials" class="link flex">
+                        <i class="bx bx-cog"></i>
+                        <span>Modifier les identifiants</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/logout" class="link flex">
+                        <i class="bx bx-log-out"></i>
+                        <span>Se déconnecter</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Navbar -->
+<nav class="navbar flex">
+    <i class="bx bx-menu" id="sidebar-open"></i>
+    <input type="text" placeholder="Rechercher un serveur..." class="search_box"/>
+</nav>
+<main class="main list flex">
+    <!-- Servers list -->
+    {% for server in servers %}
+    <div onclick="goToServer('{{ server.id }}')"
+         class="server-card
+            {% if server.online %}
+                {% if server.system_health == 'OK' %}
+                    server-card-on
+                {% elif server.system_health == 'Warning' %}
+                    server-card-warning
+                {% elif server.system_health == 'Critical' %}
+                    server-card-off
+                {% endif %}
+            {% else %}
+                server-card-off
+            {% endif %}">
+        <div class="server-card-enterprise">
+            <i class='bx bx-server bx-lg'></i>
+            <p class="server-card-enterprise-name">{{ server.enterprise_name }}</p>
+        </div>
+        <div class="server-card-info">
+            <p class="server-card-hostname"><i class='bx bx-desktop bx-sm'></i> Hostname: <span
+                    class="server-card-result">{{ server.server_name }}</span></p>
+            <p class="server-card-status"><i class='bx bx-check-shield bx-sm'></i> Status: <span
+                    class="server-card-result">
+                {% if server.online %}
+                    <span class="status-dot green-dot"></span> En ligne
+                {% else %}
+                    <span class="status-dot red-dot"></span> Hors ligne
+                {% endif %}
+            </span></p>
+            <p class="server-card-address"><i class='bx bx-health bx-sm'></i> Health: <span class="server-card-result">{{ server.system_health }}</span>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</main>
+<script>
+    document.querySelector('.search_box').addEventListener('input', function () {
+        const searchTerm = this.value.toLowerCase();
+        const serverCards = document.querySelectorAll('.server-card');
+
+        serverCards.forEach(card => {
+            const serverName = card.querySelector('.server-card-hostname .server-card-result').textContent.toLowerCase();
+            const enterpriseName = card.querySelector('.server-card-enterprise-name').textContent.toLowerCase();
+
+            if (serverName.includes(searchTerm) || enterpriseName.includes(searchTerm)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    function goToServer(id) {
+        window.location.href = `/server/${id}`;
+    }
+</script>
+</body>
+</html>

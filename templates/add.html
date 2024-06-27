@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CAI Monitoring</title>
+    <link rel="stylesheet" href="/static/style.css"/>
+    <!-- Boxicons CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="/static/script.js" defer></script>
+</head>
+<body>
+<nav class="sidebar locked">
+    <div class="logo_items flex">
+        <span class="nav_image">
+          <img src="/static/images/logo.png" alt="logo_img"/>
+        </span>
+        <span class="logo_name">Monitoring</span>
+        <i class="bx bx-lock-alt" id="lock-icon" title="Unlock Sidebar"></i>
+        <i class="bx bx-x" id="sidebar-close"></i>
+    </div>
+
+    <div class="menu_container">
+        <div class="menu_items">
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Dashboard</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/" class="link flex">
+                        <i class="bx bx-server"></i>
+                        <span>Tous les serveurs</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/enterprises" class="link flex">
+                        <i class="bx bx-buildings"></i>
+                        <span>Entreprises</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Gestion</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/add" class="link flex">
+                        <i class="bx bx-folder-plus"></i>
+                        <span>Ajouter un serveur</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Compte</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/edit_credentials" class="link flex">
+                        <i class="bx bx-cog"></i>
+                        <span>Modifier les identifiants</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/logout" class="link flex">
+                        <i class="bx bx-log-out"></i>
+                        <span>Se déconnecter</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<i class="bx bx-menu" id="sidebar-open"></i>
+<main class="main centered flex">
+    <!-- Add page -->
+    <div class="wrapper">
+        <h2>Ajouter un serveur</h2>
+        <form action="#" id="add-server-form">
+            <div class="input-box">
+                <input id="ilo_ip" name="ilo_ip" type="text" placeholder="IP de l'iLO" required>
+            </div>
+            <div class="input-box">
+                <input id="ilo_username" name="ilo_username" type="text"
+                       placeholder="Nom d'utilisateur de l'iLO" required>
+            </div>
+            <div class="input-box">
+                <input id="ilo_password" name="ilo_password" type="password" placeholder="Mot de passe de l'iLO" required>
+            </div>
+            <div class="input-box">
+                <input id="enterprise_name" name="enterprise_name" type="text" placeholder="Entreprise" required>
+            </div>
+            <div class="input-box button">
+                <input id="submit-button" type="Submit" value="Ajouter">
+            </div>
+        </form>
+        <div id="message"></div>
+        <div id="loading" style="display: none;">Chargement...</div>
+    </div>
+</main>
+<script>
+    document.getElementById("add-server-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const loadingDiv = document.getElementById('loading');
+        const messageDiv = document.getElementById('message');
+        const submitButton = document.getElementById('submit-button');
+
+        loadingDiv.style.display = 'block';
+        messageDiv.innerHTML = '';
+        messageDiv.style.display = "none";
+        messageDiv.style.backgroundColor = "#000000";
+        submitButton.disabled = true;
+
+        const formData = {
+            ilo_ip: document.getElementById("ilo_ip").value,
+            ilo_username: document.getElementById("ilo_username").value,
+            ilo_password: document.getElementById("ilo_password").value,
+            enterprise_name: document.getElementById("enterprise_name").value
+        };
+
+        const fetchPromise = fetch('/add_server', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Les identifiants ou l\'IP de l\'iLO ne sont pas bons')), 5000)
+        );
+
+        Promise.race([fetchPromise, timeoutPromise])
+            .then(response => {
+                loadingDiv.style.display = 'none';
+                submitButton.disabled = false;
+                return response.json();
+            })
+            .then(response => {
+                if (response.message) {
+                    messageDiv.innerHTML = '<p>' + response.message + '</p>';
+                    messageDiv.style.backgroundColor= "#0a780a";
+                    messageDiv.style.display = "flex";
+                } else if (response.error) {
+                    let errorMessage;
+                    if (response.error === "Server with this iLO IP already exists") {
+                        errorMessage = "Le serveur avec cette IP iLO existe déjà";
+                    } else if (response.error.includes("HTTP 400: Failed to created the session")) {
+                        errorMessage = "Les identifiants sont incorrects";
+                    } else {
+                        errorMessage = response.error;
+                    }
+                    messageDiv.innerHTML = '<p>' + errorMessage + '</p>';
+                    document.getElementById("message").style.backgroundColor= "#aa0000";
+                    document.getElementById("message").style.display = "flex";
+                }
+            })
+            .catch(error => {
+                loadingDiv.style.display = 'none';
+                submitButton.disabled = false;
+                messageDiv.innerHTML = '<p>Une erreur s\'est produite : ' + error.message + '</p>';
+                document.getElementById("message").style.backgroundColor= "#aa0000";
+                document.getElementById("message").style.display = "flex";
+            });
+    });
+</script>
+</body>
+</html>

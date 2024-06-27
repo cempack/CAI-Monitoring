@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CAI Monitoring</title>
+    <link rel="stylesheet" href="/static/style.css"/>
+    <!-- Boxicons CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="/static/script.js" defer></script>
+</head>
+<body>
+<nav class="sidebar locked">
+    <div class="logo_items flex">
+        <span class="nav_image">
+          <img src="/static/images/logo.png" alt="logo_img"/>
+        </span>
+        <span class="logo_name">Monitoring</span>
+        <i class="bx bx-lock-alt" id="lock-icon" title="Unlock Sidebar"></i>
+        <i class="bx bx-x" id="sidebar-close"></i>
+    </div>
+
+    <div class="menu_container">
+        <div class="menu_items">
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Dashboard</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/" class="link flex">
+                        <i class="bx bx-server"></i>
+                        <span>Tous les serveurs</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/enterprises" class="link flex">
+                        <i class="bx bx-buildings"></i>
+                        <span>Entreprises</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Gestion</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/add" class="link flex">
+                        <i class="bx bx-folder-plus"></i>
+                        <span>Ajouter un serveur</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="menu_item">
+                <div class="menu_title flex">
+                    <span class="title">Compte</span>
+                    <span class="line"></span>
+                </div>
+                <li class="item">
+                    <a href="/edit_credentials" class="link flex">
+                        <i class="bx bx-cog"></i>
+                        <span>Modifier les identifiants</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/logout" class="link flex">
+                        <i class="bx bx-log-out"></i>
+                        <span>Se déconnecter</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a class="link flex">
+                        <i class="bx bx-log-out"></i>
+                        <span>Reset</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<i class="bx bx-menu" id="sidebar-open"></i>
+<main class="main centered flex">
+    <!-- Details page -->
+    <div class="wrapper">
+        <h2>{{ server.enterprise_name }} - {{ server.server_name }}</h2>
+        <ul>
+            <li>Nom du produit : {{ server.product_name }}</li>
+            <li>Numéro de série : {{ server.serial_number }}</li>
+            <li>Santé du système : {{ server.system_health }}</li>
+            <li>Version du BIOS : {{ server.bios_version }}</li>
+            <li>Mémoire totale : {{ server.memory }} Go</li>
+            <li>Santé des ventilateurs : {{ server.fans_health }}</li>
+            <li>Nombre de processeurs : {{ server.processors_count }}</li>
+            <li>Nombre d'interfaces réseau : {{ server.network_interfaces_count }}</li>
+            <li>Statut de l'alimentation : {{ server.power_status }}</li>
+            <li id="last-updated">Dernière mise à jour des informations : {{ server.last_updated }}</li>
+        </ul>
+        <ul id="ilo-credentials">
+            <h3>Identifiants de l'iLO</h3>
+            <li>Nom d'utilisateur : {{ server.ilo_username }}</li>
+            <li>Mot de passe : {{ server.ilo_password }}</li>
+        </ul>
+        <div class="buttons">
+            <a class="button danger" href="/delete/{{ server.id }}"><i class='bx bx-folder-minus'></i> Supprimer le
+                serveur</a>
+            <a class="button" href="/edit_server/{{ server.id }}"><i class='bx bx-edit'></i> Modifier le serveur</a>
+            <a class="button" target="_blank" href="https://{{ server.ilo_ip }}"><i class='bx bx-link-external'></i>
+                Accéder a l'iLO</a>
+        </div>
+    </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const lastUpdatedElement = document.getElementById('last-updated');
+        const rawDate = lastUpdatedElement.textContent.split(': ')[1].trim();
+
+        const date = new Date(rawDate + ' UTC+2');
+
+        // Convert to the user's local time
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZoneName: 'short'
+        };
+        const formattedDate = date.toLocaleDateString(navigator.language, options);
+
+        lastUpdatedElement.textContent = `Dernière mise à jour des informations : ${formattedDate}`;
+    });
+</script>
+</body>
+</html>
